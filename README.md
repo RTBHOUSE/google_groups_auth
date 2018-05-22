@@ -2,7 +2,7 @@
 Apache auth based on google groups. (works with mod_auth_openidc : https://github.com/zmartzone/mod_auth_openidc)
 
 google_groups_auth.py grant access only to defined google groups members.                              
-Header googlegroup contain list of all user groups (base64). It is usefull for additional authorization on the app side.
+Header googlegroups contain list of all user groups (base64). It is usefull for additional authorization on the app side.
 
 
 
