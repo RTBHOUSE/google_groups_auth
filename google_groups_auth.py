@@ -1,5 +1,14 @@
 #!/usr/bin/python3
 
+# ============================== SUMMARY =====================================
+#
+# Program : google_groups_auth.py
+# Version : 0.1 ( first beta )
+# Date    : May 22, 2018
+# Author  : Marcin Kowalczuk - marcin.kowalczuk(at)rtbhouse.com
+# Licence : GPL - summary below, full text at http://www.fsf.org/licenses/gpl.txt
+#
+
 import sys
 import time
 import json
@@ -47,7 +56,7 @@ def get_google_token():
     log("get google token")
     SCOPES = ['https://www.googleapis.com/auth/admin.directory.group.readonly']
     SERVICE_ACCOUNT_FILE = '/opt/apache/service_account.json'
-    credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES).with_subject('gam-bot@rtbhouse.com')
+    credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES).with_subject('Subject_account@rtbhouse.com')
     directory = googleapiclient.discovery.build('admin', 'directory_v1', credentials=credentials)
     return directory
 
