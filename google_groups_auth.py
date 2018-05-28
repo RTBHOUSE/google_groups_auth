@@ -25,7 +25,7 @@ def ask_cache(key):
         client = base.Client(('localhost', 11211))
         response = client.get(key)
     except:
-        log("cache  -  problem z memcache, return: None")
+        log("cache  -  problem with memcache, return: None")
         return None
 
     return response
@@ -38,11 +38,11 @@ def save_cache(key, value):
         # 5 min expiration time
         client.set(key, value, 300)
     except:
-        log("cache  -  problem z zapisaniem do cache")
+        log("cache  -  problem with saving cache")
 
 #---------------------------------------------------------------------------------
 def log(string):
-    ''' do poprawy, bardzo slabe logowanie '''
+    ''' to improve, very poor logging '''
 
     f = open('/opt/apache/gauth.txt', 'a')
     f.write(time.ctime() + "  -  " + string + "\n")
@@ -51,7 +51,7 @@ def log(string):
 
 #---------------------------------------------------------------------------------
 def get_google_token():
-    ''' dorobic uzycie aktualnego tokenu, obecnie za kazdym razem jest nowy '''
+    ''' to improve: use existing token, at the moment we always create new '''
 
     log("get google token")
     SCOPES = ['https://www.googleapis.com/auth/admin.directory.group.readonly']
@@ -62,7 +62,7 @@ def get_google_token():
 
 #---------------------------------------------------------------------------------
 def ask_google(key):
-    ''' pobranie z google listy grup usera '''
+    ''' fetching user google groups '''
 
     try:
         directory = get_google_token()
@@ -91,10 +91,10 @@ def get_json(user):
 
 #---------------------------------------------------------------------------------
 def hasMember(user, group):
-    ''' sprawdza cache, albo pyta google api:https://www.googleapis.com/admin/directory/v1/groups/groupKey/hasMember/memberKey '''
+    ''' checks cache and (if nessesary) ask google api:https://www.googleapis.com/admin/directory/v1/groups/groupKey/hasMember/memberKey '''
 
 
-    # sklejam usera i grupe na potrzeby unikalnego klucza memcache
+    # join user and group to creating uniq key for memcache
     key = user + "#" + group
     isMember = ask_cache(key)
     if isMember is None:
@@ -105,7 +105,7 @@ def hasMember(user, group):
             results = directory.members().hasMember(groupKey=group, memberKey=user).execute()
             isMember = json.loads(json.dumps(results))['isMember']
         except:
-            #jesli blad to zwracamy no (np nieistniejaca nazwa grupy)
+            # if error return no (for example group don't exist )
             log("auth  -  error connect to google /hasMember/")
             isMember = False
             
@@ -116,7 +116,7 @@ def hasMember(user, group):
             save_cache(key, "no")
             return "no"
         else:
-            log("auth  -  error nieosblugiwana odpowiedz z google /hasMember/, return no")
+            log("auth  -  error, unsupported google answer /hasMember/, return no")
             return "no"
 
     else:
@@ -126,7 +126,7 @@ def hasMember(user, group):
 
 #---------------------------------------------------------------------------------
 def check_access_by_member(user, authgroups_string):
-    ''' weryfikuje przynaleznosc do grup, moze to byc rowniez przynaleznosci zagniezdzona '''
+    ''' Checks whether the given user is a member of the group. Membership can be direct or nested. '''
     authgroups = authgroups_string.split(";")
 
     # for authgroups member user membership
@@ -143,51 +143,20 @@ def check_access_by_member(user, authgroups_string):
 
 
 #---------------------------------------------------------------------------------
-def check_access(user, authgroups_string):
-    ''' deprecated - funcja nie sprawdzala zagniezdzonych przynaleznoci do grup '''
-
-    gr = ask_cache(user)
-    
-    if gr is None:
-        #pobieram z google liste grup
-        gr = ask_google(user)
-        log("auth  -  " + user + " from google")
-        if gr == "empty":
-            #problem z googlem, brak w cache, uwalamy dostep
-            log("auth  -  " + user + " error while fetching groups from google, access deny")
-            return "no"
-    else:
-        #pobrane z cache w formacie base64 json, nalezy rozkodowac
-        log("auth  -  " + user + " from cache")
-        gr = json.loads(base64.b64decode(gr).decode('utf-8'))
-
-    
-    authgroups = authgroups_string.split(";")
-    for authgroup in authgroups:
-        if authgroup in gr:
-            log("auth  -  " + user + " return yes")
-            return "yes"
-    
-    log("auth  -  " + user + " return no")
-    return "no"
-
-
-
-#---------------------------------------------------------------------------------
 def main():
     request_count = 0
     while True:
-        # Poberam linie z stdin (to co apache wysyla)
+        # Fetch one line from stdin
         request = input()
         request_count += 1
         log("#################   request count: " + str(request_count))
         log("#################   request -  " + request)
         
-        # w zaleznosci od poczatku stringa tworze jsona lub sprawdzam uprawnienia
+        # select script function: fetch user grups or checks permissions
         answer = None
         if request.startswith("json"): 
             args = request.split("#")
-            # 0:json  1:nazwa usera
+            # 0:json  1:user
             answer =  get_json(args[1])
             log("json  -  STDOUT  -  " + answer.decode('utf-8'))
             print(answer.decode('utf-8'))
@@ -196,10 +165,10 @@ def main():
 
         if request.startswith("auth"): 
             args = request.split("#")
-            # 0:auth  1:nazwa usera  2: authgroups
+            # 0:auth  1:user  2: authgroups
             if args[2] == "":
-                #workaround, pojawiaja sie puste requesty, 
-                #!!!! (rozwiazane, SetEnv w apache odpalany jest po rewrite)
+                #workaround, some requests are empty, 
+                #!!!! (resolved, can't use SetEnv in apache conf)
                 answer = "think"
                 log("auth  -  STDOUT  -  " + args[1]  + " ...think.....")
                 print(answer)
