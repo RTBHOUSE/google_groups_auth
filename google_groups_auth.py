@@ -175,7 +175,6 @@ def main():
                 print(answer)
                 continue
             else:
-                #answer =  check_access(args[1], args[2])
                 answer =  check_access_by_member(args[1], args[2])
                 log("auth  -  STDOUT  -  " + answer)
                 print(answer)
