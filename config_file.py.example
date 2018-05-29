@@ -15,5 +15,5 @@ SubjectAccount = "example_account@your.domain"
 
 # Local
 LogFile = "/opt/apache/gauth.txt"
-Base64Enrypt = False
+isBase64Encrypt = False
 
