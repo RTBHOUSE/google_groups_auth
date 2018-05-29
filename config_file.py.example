@@ -1,0 +1,19 @@
+#!/usr/bin/python3
+#----------------------------------------
+
+
+# Memcache server
+MemcacheServer = "localhost"
+MemcachePort = 11211
+# Memcache Expire Time [s]
+MemcacheExpireTime = 300
+
+# Google
+GoogleScopes = ['https://www.googleapis.com/auth/admin.directory.group.readonly']
+ServiceAccountFile = "/opt/apache/service_account.json"
+SubjectAccount = "example_account@your.domain"
+
+# Local
+LogFile = "/opt/apache/gauth.txt"
+Base64Enrypt = False
+

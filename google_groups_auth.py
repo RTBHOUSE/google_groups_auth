@@ -16,13 +16,14 @@ import base64
 from google.oauth2 import service_account
 import googleapiclient.discovery
 from pymemcache.client import base
+import config_file as config
 
 
 #---------------------------------------------------------------------------------
 def ask_cache(key):
     try:
         log("cache  -  ask key: " + key)
-        client = base.Client(('localhost', 11211))
+        client = base.Client((config.MemcacheServer, config.MemcachePort))
         response = client.get(key)
     except:
         log("cache  -  problem with memcache, return: None")
@@ -34,9 +35,9 @@ def ask_cache(key):
 def save_cache(key, value):
     try:
         log("cache  -  save key: " + key)
-        client = base.Client(('localhost', 11211))
+        client = base.Client((config.MemcacheServer, config.MemcachePort))
         # 5 min expiration time
-        client.set(key, value, 300)
+        client.set(key, value, config.MemcacheExpireTime)
     except:
         log("cache  -  problem with saving cache")
 
@@ -44,7 +45,7 @@ def save_cache(key, value):
 def log(string):
     ''' to improve, very poor logging '''
 
-    f = open('/opt/apache/gauth.txt', 'a')
+    f = open(config.LogFile, 'a')
     f.write(time.ctime() + "  -  " + string + "\n")
     f.flush()
     f.close()
@@ -54,9 +55,7 @@ def get_google_token():
     ''' to improve: use existing token, at the moment we always create new '''
 
     log("get google token")
-    SCOPES = ['https://www.googleapis.com/auth/admin.directory.group.readonly']
-    SERVICE_ACCOUNT_FILE = '/opt/apache/service_account.json'
-    credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES).with_subject('Subject_account@rtbhouse.com')
+    credentials = service_account.Credentials.from_service_account_file(config.ServiceAccountFile, scopes=config.GoogleScopes).with_subject(config.SubjectAccount)
     directory = googleapiclient.discovery.build('admin', 'directory_v1', credentials=credentials)
     return directory
 
@@ -158,6 +157,7 @@ def main():
             args = request.split("#")
             # 0:json  1:user
             answer =  get_json(args[1])
+            answer =  base64.b64decode(answer) # disable base64
             log("json  -  STDOUT  -  " + answer.decode('utf-8'))
             print(answer.decode('utf-8'))
             continue
