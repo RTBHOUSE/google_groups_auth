@@ -45,10 +45,8 @@ def save_cache(key, value):
 def log(string):
     ''' to improve, very poor logging '''
 
-    f = open(config.LogFile, 'a')
     f.write(time.ctime() + "  -  " + string + "\n")
     f.flush()
-    f.close()
 
 #---------------------------------------------------------------------------------
 def get_google_token():
@@ -144,6 +142,8 @@ def check_access_by_member(user, authgroups_string):
 #---------------------------------------------------------------------------------
 def main():
     request_count = 0
+    global f
+    f = open(config.LogFile, 'a')  
     while True:
         # Fetch one line from stdin
         request = input()
@@ -157,7 +157,8 @@ def main():
             args = request.split("#")
             # 0:json  1:user
             answer =  get_json(args[1])
-            answer =  base64.b64decode(answer) # disable base64
+            if not config.isBase64Encrypt:
+                   answer =  base64.b64decode(answer)
             log("json  -  STDOUT  -  " + answer.decode('utf-8'))
             print(answer.decode('utf-8'))
             continue
@@ -184,7 +185,7 @@ def main():
             log("error  -  bad request, STDOUT: NULL")
             print("NULL")
 
-
+    f.close()
 #---------------------------------------------------------------------------------
 if __name__ == "__main__":
     main()
