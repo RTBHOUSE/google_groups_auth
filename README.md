@@ -5,15 +5,18 @@ google_groups_auth.py grant access only to defined google groups members.
 Header googlegroups contain list of all user groups (base64). It is usefull for additional authorization on the app side.
 
 
-
-
 ## INSTALL
 
 
 ### In Google
-  * create project
-  * create service account and download json
-  * add permission to api "https://www.googleapis.com/auth/admin.directory.group.readonly" for service account
+  * Create project and service account: https://developers.google.com/identity/protocols/OAuth2ServiceAccount and make sure to download the json file.
+  * Under "APIs & Auth", choose APIs.
+  * Click on Admin SDK and then Enable API.
+  * Follow the steps on https://developers.google.com/admin-sdk/directory/v1/guides/delegation#delegate_domain-wide_authority_to_your_service_account and give the client id from step 2 the following oauth scopes:
+	https://www.googleapis.com/auth/admin.directory.group.readonly
+	https://www.googleapis.com/auth/admin.directory.user.readonly
+  * Follow the steps on https://support.google.com/a/answer/60757 to enable Admin API access.
+  * Create or choose an existing administrative email address on the Gmail domain. This email will be impersonated by this script to make calls to the Admin SDK.
 
 
 ### In your system (ubuntu example)
