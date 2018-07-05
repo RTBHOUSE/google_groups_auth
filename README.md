@@ -19,15 +19,25 @@ Header googlegroups contain list of all user groups (base64). It is usefull for 
   * Create or choose an existing administrative email address on the Gmail domain. This email will be impersonated by this script to make calls to the Admin SDK.
 
 
-### In your system (ubuntu example)
+### In your system (ubuntu example) - Python Edition
   * apt-get install python3-setuptools
   * easy_install3 pip
   * pip3 install google-api-python-client google-auth-httplib2 google-auth pymemcache
   * apt install memcached
 
+### In your system (ubuntu example) - Go Edition
+  * You must compile Go source code (go version > 1.6)
+  * apt install golang-go
+  * go get github.com/patrickmn/go-cache
+  * go get -u google.golang.org/api/admin/directory/v1
+  * go get -u golang.org/x/oauth2/...
+  
+  * go build googe_groups_auth.go
+
+
 ### deploy configuration
 
-  * deploy python script google_groups_auth.py (for example: /opt/google_groups_auth/google_groups_auth.py)
+  * deploy python script google_groups_auth.py (for example: /opt/google_groups_auth/google_groups_auth.py) or Go binary.
   * deploy json file
   * deploy apache configuration 
 

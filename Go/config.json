@@ -1,0 +1,7 @@
+{
+	"GoogleScope": "https://www.googleapis.com/auth/admin.directory.group.readonly",
+	"ServiceAccountFile": "account.json",
+	"SubjectAccount": "your_Subject_Account",
+	"LogFile": "gauthGo.log",
+	"Base64Encrypt": false
+}
