@@ -27,7 +27,7 @@ Header googlegroups contain list of all user groups (base64). It is usefull for 
 
 ### In your system (ubuntu example) - Go Edition
   * You must compile Go source code (go version > 1.6)
-  * apt install golang-go
+  * apt install golang
   * go get github.com/patrickmn/go-cache
   * go get -u google.golang.org/api/admin/directory/v1
   * go get -u golang.org/x/oauth2/...
