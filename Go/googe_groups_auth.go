@@ -1,3 +1,12 @@
+// ============================== SUMMARY =====================================
+//
+// Program : google_groups_auth.py
+// Version : 1.0.go 
+// Date    : 05.07.2018
+// Author  : Marcin Kowalczuk - marcin.kowalczuk(at)rtbhouse.com
+// Licence : GPL - summary below, full text at http://www.fsf.org/licenses/gpl.txt
+//
+//------------------------------------------------------------------------------------
 package main
 
 import (
