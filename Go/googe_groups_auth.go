@@ -1,6 +1,6 @@
 // ============================== SUMMARY =====================================
 //
-// Program : google_groups_auth.py
+// Program : google_groups_auth.go
 // Version : 1.0.go 
 // Date    : 05.07.2018
 // Author  : Marcin Kowalczuk - marcin.kowalczuk(at)rtbhouse.com
