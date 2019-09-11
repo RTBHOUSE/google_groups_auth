@@ -145,3 +145,29 @@ ServiceAccountFile - path to you service account json key
 SubjectAccount - administrative account, this email will be impersonated by this script to make calls to the Admin SDK.
 LogFile - many usefull information
 Base64Encrypt - determine if list of user group should be encrypted by base64 or no. 
+
+### LOG example
+
+```
+2019/09/11 10:09:07 ############# request:  1  ################
+2019/09/11 10:09:07 JSON  - fetch json, user: marcin.kowalczuk@rtbhouse.com
+2019/09/11 10:09:07 CACHE - ask for JSON key: marcin.kowalczuk@rtbhouse.com
+2019/09/11 10:09:07 CACHE - Do not found json for user marcin.kowalczuk@rtbhouse.com
+2019/09/11 10:09:07 JSON  - connect to google
+2019/09/11 10:09:08 CACHE - save JSON to cache - key: marcin.kowalczuk@rtbhouse.com
+2019/09/11 10:09:08 JSON  - STDOUT: ["myexamplegroup@rtbhouse.com","second-group@rtbhouse.com"] 
+2019/09/11 10:09:54 ############# request:  2  ################
+2019/09/11 10:09:54 AUTH  - checking auth, user:( marcin.kowalczuk@rtbhouse.com ) groups: myexamplegroup@rtbhouse.com
+2019/09/11 10:09:54 CACHE - ask for AUTH key: marcin.kowalczuk@rtbhouse.com#myexamplegroup@rtbhouse.com
+2019/09/11 10:09:54 CACHE - Do not found key: marcin.kowalczuk@rtbhouse.com#myexamplegroup@rtbhouse.com in cache
+2019/09/11 10:09:54 AUTH  - connect to google /has/Member
+2019/09/11 10:09:54 CACHE - save response to cache - key: marcin.kowalczuk@rtbhouse.com#myexamplegrouprtbhouse.com
+2019/09/11 10:09:54 AUTH  -  marcin.kowalczuk@rtbhouse.com isMember myexamplegroup@rtbhouse.com ? ...... return yes
+2019/09/11 10:09:54 AUTH  - STDOUT:  yes
+2019/09/11 10:12:56 ############# request:  3  ################
+2019/09/11 10:12:56 JSON  - fetch json, user: marcin.kowalczuk@rtbhouse.com
+2019/09/11 10:12:56 CACHE - ask for JSON key: marcin.kowalczuk@rtbhouse.com
+2019/09/11 10:12:56 CACHE - Found JSON key: marcin.kowalczuk@rtbhouse.com in cache
+2019/09/11 10:12:56 JSON  - STDOUT:  ["myexamplegroup@rtbhouse.com","second-group@rtbhouse.com"] 
+
+```
