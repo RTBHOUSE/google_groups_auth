@@ -21,9 +21,9 @@ OIDCSessionMaxDuration 31536000
 
 RewriteEngine On
 # ------------------------------------------------------------------------
-# RewriteMap use external python script google_groups_auth.py
+# RewriteMap use GO binary 
 # ------------------------------------------------------------------------
-RewriteMap gauthgroup "prg:/opt/google_groups_auth/GoogleGroupsAuth.bin"
+RewriteMap gauthgroup "prg:/opt/google_groups_auth/googe_groups_auth.bin"
 
 <Location ~ "/">
   

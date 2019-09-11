@@ -24,12 +24,9 @@ Golang extension return simple answer yes or no, all logic is created in rewrite
 
 # Functions
 
-  * Authorization
-  Main function checking group membership
+  * Authorization - main function checking group membership
 
-  * Fetch group list
-  Fetching all group attached to user. It can be saved in header and forwarded to your app. In some needs it want be very usefull. For example if your application has internal authorizaton then you can simply parse header for checking all user group membership.
-
+  * Fetch group list - fetching list of all user groups. It can be saved in the header and forwarded to your app. In some needs, it wants to be very useful. For example, if your application has internal authorizaton then you can simply parse header for checking all user group membership.
 
 
 # Manual verification
@@ -64,9 +61,8 @@ This information can be base64 encoded. See configuration file
 
 
 # Performance 
-
-It seems that this configuration may be very slow because every reguest must be verified in google by asking it via API.
-Dont't worry, only first request is verified, and result is saved to internal cache for 5 min (github.com/patrickmn/go-cache)
+It seems that this configuration may be very slow because every request must be verified in google by asking it via API.
+Don't worry, the only first request is verified, and result is saved to internal cache for 5 min (github.com/patrickmn/go-cache)
 
 ```
 	// Create a cache with a default expiration time of 5 minutes, and which
@@ -74,7 +70,8 @@ Dont't worry, only first request is verified, and result is saved to internal ca
 	c := cache.New(5*time.Minute, 10*time.Minute)
 ```
 
-On internal stress tests we achieved several thousands req/s using typical VM (4 CPU, 4GB RAM).
+On internal stress tests, we achieved several thousand req/s using a typical VM (4 CPU, 4GB RAM).
+
 
 
 # Configuration
@@ -129,3 +126,22 @@ APIs & Services -> Credentials -> OAuth2.0 clients IDs -> and select your client
   * deploy account.json and config.json fles to the same directory as google_groups_auth.bin
   * deploy apache configuration. Example virtual host configuration you can see in configuration_files/google-groups-auth.conf.exampleApacheConf
 
+### config.json
+
+Example configuration:
+
+```
+{
+	"GoogleScope": "https://www.googleapis.com/auth/admin.directory.group.readonly",
+	"ServiceAccountFile": "account.json",
+	"SubjectAccount": "your_Subject_Account",
+	"LogFile": "gauthGo.log",
+	"Base64Encrypt": false
+}
+```
+
+GoogleScope - describes connecting permissions to google
+ServiceAccountFile - path to you service account json key
+SubjectAccount - administrative account, this email will be impersonated by this script to make calls to the Admin SDK.
+LogFile - many usefull information
+Base64Encrypt - determine if list of user group should be encrypted by base64 or no. 
