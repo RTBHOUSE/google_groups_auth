@@ -1,4 +1,4 @@
-# apache_google_groups_auth
+# Apache authorization based on Google Group membership 
 Imagine... when you configure web server usually you grant access to your resources only to specific persons. When you have LDAP it is simple, but what you should do if you have only Google Groups? It is possible?
 YES, we developed simple extensions like Google IAP, but everything is located on-premiss in your apache configuration. Actually it is possible to grant access to your on-premiss apache to only selected Google Groups. Membership is verified in every request
 
@@ -10,9 +10,60 @@ In mod_auth_openidc you can configure simple Authorization like domain or specif
 Reason is very simple. OpenID connect do not have access to information containing group membership. You only confirm that your client is the email owner.
 
 
+## How it works
+
+
+When you authenticate using mod_auth_openidc (after a click on consent screen) your apache is aware that you are you. But information about group membership is absent. We should do the next step. Apache should have one service account to asking Google if the user are in group. If answer is positive access is granted, otherwise you show forbidden screen. 
+Asking Google realizes by using external program developed in Golang. Apache can run external program using rewrite engine. More specifically RewriteMap (https://httpd.apache.org/docs/2.4/rewrite/rewritemap.html)
+
+Golang extension return simple answer yes or no, all logic is created in rewrite rules. For example if rewrite map don't return "yes" we should forbid the request (3 line):
+
+```
+1)  RewriteRule .* - [E=ifaccess:${gauthgroup:auth#%{REMOTE_USER}#%{ENV:authgroups}}]    # see manual verification to understood this syntax
+2)  RewriteCond %{ENV:ifaccess} !^yes$ [NC]                                              # condition
+3)  RewriteRule ^ - [F,L]                                                                # forbidden
+```
+
+# Manual verification
+You can check if Google service account is properly configured by manual runing Golang binary. 
+The program acceprs data on stdin in specific format depending on the function selected. (See Addicional funcions)
+
+  * 1. Authorization
+
+  When you want to check group membership you shou sent to stdin:
+
+```
+auth#<user>#<google_group>
+
+for example:
+./google_auth.bin 
+auth#marcin.kowalczuk@rtbhouse.com#myexamplegroup@rtbhouse.com
+yes
+```
+
+  * 2. Fetch group list 
+
+Fetching all group attached to user. It can be saved in header and forwarded to your app. In some needs it want be very usefull. For example if your application has internal authorizaton then you can simply parse header for check all user group membership.
+
+```
+json#<user>
+
+for example:
+./google_auth.bin 
+json#marcin.kowalczuk@rtbhouse.com
+["myexamplegroup@rtbhouse.com","second-group@rtbhouse.com"]
+```
+
+This information can be base64 encoded. See configuration file
+
+
+# Configuration file
+
+
+
+
+# Addicional funcions
 Header googlegroups contain list of all user groups (base64). It is usefull for additional authorization on the app side.
-
-
 ## INSTALL
 
 
