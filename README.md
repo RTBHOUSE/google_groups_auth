@@ -1,7 +1,15 @@
-# google_groups_auth
-Apache auth based on google groups. (works with mod_auth_openidc : https://github.com/zmartzone/mod_auth_openidc)
+# apache_google_groups_auth
+Imagine... when you configure web server usually you grant access to your resources only to specific persons. When you have LDAP it is simple, but what you should do if you have only Google Groups? It is possible?
+YES, we developed simple extensions like Google IAP, but everything is located on-premiss in your apache configuration. Actually it is possible to grant access to your on-premiss apache to only selected Google Groups. Membership is verified in every request
 
-google_groups_auth.py grant access only to defined google groups members.                              
+
+
+Our extension are responsible only for Authorization, additionaly you must use  mod_auth_openidc to Authentication (https://github.com/zmartzone/mod_auth_openidc)
+
+In mod_auth_openidc you can configure simple Authorization like domain or specific users, but you can't select google groups. 
+Reason is very simple. OpenID connect do not have access to information containing group membership. You only confirm that your client is the email owner.
+
+
 Header googlegroups contain list of all user groups (base64). It is usefull for additional authorization on the app side.
 
 
