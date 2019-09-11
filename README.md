@@ -1,5 +1,5 @@
 # Apache authorization based on Google Group membership 
-Imagine... when you configure web server usually you grant access to your resources only to specific persons. When you have LDAP it is simple, but what you should do if you have only Google Groups? It is possible?
+When you configure web server usually you grant access to your resources only to specific persons. If you have LDAP it is simple, but what you should do if you have only Google Groups? It is possible?
 YES, we developed simple extensions like Google IAP, but everything is located on-premiss in your apache configuration. Actually it is possible to grant access to your on-premiss apache to only selected Google Groups. Membership is verified in every request
 
 
