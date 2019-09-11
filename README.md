@@ -3,7 +3,6 @@ Imagine... when you configure web server usually you grant access to your resour
 YES, we developed simple extensions like Google IAP, but everything is located on-premiss in your apache configuration. Actually it is possible to grant access to your on-premiss apache to only selected Google Groups. Membership is verified in every request
 
 
-
 Our extension are responsible only for Authorization, additionaly you must use  mod_auth_openidc to Authentication (https://github.com/zmartzone/mod_auth_openidc)
 
 In mod_auth_openidc you can configure simple Authorization like domain or specific users, but you can't select google groups. 
@@ -11,7 +10,6 @@ Reason is very simple. OpenID connect do not have access to information containi
 
 
 ## How it works
-
 
 When you authenticate using mod_auth_openidc (after a click on consent screen) your apache is aware that you are you. But information about group membership is absent. We should do the next step. Apache should have one service account to asking Google if the user are in group. If answer is positive access is granted, otherwise you show forbidden screen. 
 Asking Google realizes by using external program developed in Golang. Apache can run external program using rewrite engine. More specifically RewriteMap (https://httpd.apache.org/docs/2.4/rewrite/rewritemap.html)
@@ -24,13 +22,23 @@ Golang extension return simple answer yes or no, all logic is created in rewrite
 3)  RewriteRule ^ - [F,L]                                                                # forbidden
 ```
 
+# Functions
+
+  * Authorization
+  Main function checking group membership
+
+  * Fetch group list
+  Fetching all group attached to user. It can be saved in header and forwarded to your app. In some needs it want be very usefull. For example if your application has internal authorizaton then you can simply parse header for checking all user group membership.
+
+
+
 # Manual verification
-You can check if Google service account is properly configured by manual runing Golang binary. 
-The program acceprs data on stdin in specific format depending on the function selected. (See Addicional funcions)
 
-  * 1. Authorization
+You can check if Google service account is properly configured by manual running Golang binary. The program accepts data on stdin in a specific format depending on the function selected. (See functions)
 
-  When you want to check group membership you shou sent to stdin:
+  * Authorization
+
+When you want to check group membership you should sent to stdin:
 
 ```
 auth#<user>#<google_group>
@@ -41,9 +49,7 @@ auth#marcin.kowalczuk@rtbhouse.com#myexamplegroup@rtbhouse.com
 yes
 ```
 
-  * 2. Fetch group list 
-
-Fetching all group attached to user. It can be saved in header and forwarded to your app. In some needs it want be very usefull. For example if your application has internal authorizaton then you can simply parse header for check all user group membership.
+  * Fetch group list 
 
 ```
 json#<user>
@@ -57,17 +63,26 @@ json#marcin.kowalczuk@rtbhouse.com
 This information can be base64 encoded. See configuration file
 
 
-# Configuration file
+# Performance 
+
+It seems that this configuration may be very slow because every reguest must be verified in google by asking it via API.
+Dont't worry, only first request is verified, and result is saved to internal cache for 5 min (github.com/patrickmn/go-cache)
+
+```
+	// Create a cache with a default expiration time of 5 minutes, and which
+	// purges expired items every 10 minutes
+	c := cache.New(5*time.Minute, 10*time.Minute)
+```
+
+On internal stress tests we achieved several thousands req/s using typical VM (4 CPU, 4GB RAM).
 
 
+# Configuration
 
+## In Google
 
-# Addicional funcions
-Header googlegroups contain list of all user groups (base64). It is usefull for additional authorization on the app side.
-## INSTALL
+First of all you need perform some actions on Google side. 
 
-
-### In Google
   * Create project and service account: https://developers.google.com/identity/protocols/OAuth2ServiceAccount and make sure to download the json file.
   * Under "APIs & Auth", choose APIs.
   * Click on Admin SDK and then Enable API.
@@ -77,26 +92,40 @@ Header googlegroups contain list of all user groups (base64). It is usefull for 
   * Follow the steps on https://support.google.com/a/answer/60757 to enable Admin API access.
   * Create or choose an existing administrative email address on the Gmail domain. This email will be impersonated by this script to make calls to the Admin SDK.
 
+  * Create clientID in you project (for mod_auth_openidc)
+    APIs & Services -> Credentials -> Create credentials -> OAuth client ID -> Web application
 
-### In your system (ubuntu example) - Python Edition
-  * apt-get install python3-setuptools
-  * easy_install3 pip
-  * pip3 install google-api-python-client google-auth-httplib2 google-auth pymemcache
-  * apt install memcached
-
-### In your system (ubuntu example) - Go Edition
-  * You must compile Go source code (go version > 1.6)
+## In your system (ubuntu example) - Go Edition
+### Compile binary
+  * You must compile Go source code (go version > 1.6) 
   * apt install golang
   * go get github.com/patrickmn/go-cache
   * go get -u google.golang.org/api/admin/directory/v1
   * go get -u golang.org/x/oauth2/...
-  
   * go build googe_groups_auth.go
 
 
-### deploy configuration
+### Install Apache and mod_auth_openidc
 
-  * deploy python script google_groups_auth.py (for example: /opt/google_groups_auth/google_groups_auth.py) or Go binary.
-  * deploy json file
-  * deploy apache configuration 
+```
+apt install apache2 libapache2-mod-auth-openidc
+a2enmod auth_openidc 
+a2enmod headers
+a2enmod rewrite
+a2enmod ssl
+
+cp -a /opt/google_groups_auth/google-groups-auth.conf.exampleApacheConf  /etc/apache2/sites-available/001-google-groups-auth.conf
+a2ensite 001-google-groups-auth.conf
+```
+
+
+Add Authorised JavaScript origins and Authorised redirect URIs in you google project.
+APIs & Services -> Credentials -> OAuth2.0 clients IDs -> and select your clientID
+
+### Deploy Apache configuration
+
+  * see puppet_manifest.pp - it describes how the puppet can automatize deploying our extension
+  * deploy binary google_groups_auth.bin (for example: /opt/google_groups_auth/google_groups_auth.bin)
+  * deploy account.json and config.json fles to the same directory as google_groups_auth.bin
+  * deploy apache configuration. Example virtual host configuration you can see in configuration_files/google-groups-auth.conf.exampleApacheConf
 

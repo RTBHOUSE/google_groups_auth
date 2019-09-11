@@ -1,0 +1,97 @@
+<VirtualHost _default_:443>
+
+# TODO before use:
+# - enable: ssl, rewrite, auth_openidc (a2enmod ...)
+
+ServerAdmin webmaster@example.com
+DocumentRoot /var/www/html
+ServerName <FQDN>
+
+############## auth_openidc.conf ##############
+OIDCScope "openid email profile"
+OIDCRemoteUserClaim email
+OIDCRedirectURI https://<FQDN>/protected/redirect_uri
+OIDCCryptoPassphrase <your_data>
+OIDCProviderMetadataURL https://accounts.google.com/.well-known/openid-configuration
+OIDCClientID <you client ID>
+OIDCClientSecret <your client secret>
+OIDCSessionInactivityTimeout 86400
+OIDCSessionMaxDuration 31536000
+###############################################
+
+RewriteEngine On
+# ------------------------------------------------------------------------
+# RewriteMap use external python script google_groups_auth.py
+# ------------------------------------------------------------------------
+RewriteMap gauthgroup "prg:/opt/google_groups_auth/GoogleGroupsAuth.bin"
+
+<Location ~ "/">
+  
+  AuthType openid-connect
+  Require valid-user
+  SSLRequireSSL
+
+  ##########################################################################
+  ###########  GOOGLE GROUPS AUTHENTICATOR                             START
+  ##########################################################################
+  # ------------------------------------------------------------------------
+  # Clear important variables for security reason 
+  # ------------------------------------------------------------------------
+
+  RequestHeader unset  googlegroups
+  RewriteRule .* - [E=ifaccess:no]
+
+  # ------------------------------------------------------------------------
+  # Define variable contain authorized groups
+  # ------------------------------------------------------------------------
+
+  RewriteRule .* - [E=authgroups:your-first-group@youdomain.com]
+
+  # ------------------------------------------------------------------------
+  # ADDITIONAL GOOGLE GROUPS
+  # ------------------------------------------------------------------------
+
+  #RewriteRule .* - [E=authgroups:%{ENV:authgroups};SecondGroup@rtbhouse.com]
+  #RewriteRule .* - [E=authgroups:%{ENV:authgroups};AnotherGroup@rtbhouse.com]
+  #......
+
+  # ------------------------------------------------------------------------
+  # Checking access, external binary return "yes" or "no" to variable "ifaccess" 
+  # if "ifaccess" contain some else than "yes" then client gets: 403 - Forbidden
+  # ------------------------------------------------------------------------
+
+  RewriteRule .* - [E=ifaccess:${gauthgroup:auth#%{REMOTE_USER}#%{ENV:authgroups}}]
+  RewriteCond %{ENV:ifaccess} !^yes$ [NC]
+  RewriteRule ^ - [F,L]
+
+  # ------------------------------------------------------------------------
+  # Fetching user groups, googlegroups header contain groups in json (base64 encryption)
+  # ------------------------------------------------------------------------
+
+  RewriteRule .* - [E=jsonheader:${gauthgroup:json#%{REMOTE_USER}}]
+  RequestHeader set googlegroups %{jsonheader}e
+
+  ##########################################################################
+  ###########  GOOGLE GROUPS AUTHENTICATOR                               END
+  ##########################################################################
+
+ </Location>
+
+ErrorLog ${APACHE_LOG_DIR}/error.log
+CustomLog ${APACHE_LOG_DIR}/access.log combined
+SSLEngine on
+
+################ SSL Lets Encrypt #################### ###################
+SSLCertificateFile  /etc/certbot/<FQDN>/cert.pem
+SSLCertificateKeyFile /etc/certbot/<FQDN>/privkey.pem
+##########################################################################
+
+<FilesMatch "\.(cgi|shtml|phtml|php)$">
+        SSLOptions +StdEnvVars
+</FilesMatch>
+<Directory /usr/lib/cgi-bin>
+        SSLOptions +StdEnvVars
+</Directory>
+
+</VirtualHost>
+
