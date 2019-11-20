@@ -41,7 +41,7 @@ When you want to check group membership you should sent to stdin:
 auth#<user>#<google_group>
 
 for example:
-./google_auth.bin 
+./google_groups_auth.bin
 auth#marcin.kowalczuk@rtbhouse.com#myexamplegroup@rtbhouse.com
 yes
 ```
@@ -52,7 +52,7 @@ yes
 json#<user>
 
 for example:
-./google_auth.bin 
+./google_groups_auth.bin
 json#marcin.kowalczuk@rtbhouse.com
 ["myexamplegroup@rtbhouse.com","second-group@rtbhouse.com"]
 ```
